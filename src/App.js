@@ -15,6 +15,19 @@ const MyRadio = ({ label, ...props }) => {
   return <FormControlLabel {...field} control={<Radio />} label={label} />;
 };
 
+const MyTextField = ({ placeholder, ...props }) => {
+  const [field, meta] = useField(props);
+  const errorText = meta.error && meta.touched ? meta.error : '';
+  return (
+    <TextField
+      placeholder={placeholder}
+      {...field}
+      helperText={errorText}
+      error={!!errorText}
+    />
+  );
+};
+
 const App = () => {
   return (
     <div className='form'>
@@ -26,6 +39,14 @@ const App = () => {
           cookies: [],
           yogurt: ''
         }}
+        validate={values => {
+          const errors = {};
+
+          if (values.firstName.includes('bob')) {
+            errors.firstName = 'no bob';
+          }
+          return errors;
+        }}
         onSubmit={(data, { setSubmitting }) => {
           // make async call
           setSubmitting(true);
@@ -33,22 +54,20 @@ const App = () => {
           setSubmitting(false);
         }}
       >
-        {({ values, isSubmitting }) => (
+        {({ values, errors, isSubmitting }) => (
           <Form>
             <div>
-              <Field
+              <MyTextField
                 placeholder='first name'
                 name='firstName'
                 type='input'
-                as={TextField}
               />
             </div>
             <div>
-              <Field
+              <MyTextField
                 placeholder='last name'
                 name='lastName'
                 type='input'
-                as={TextField}
               />
             </div>
             <div>
@@ -86,6 +105,7 @@ const App = () => {
               </Button>
             </div>
             <pre>{JSON.stringify(values, null, 2)}</pre>
+            <pre>{JSON.stringify(errors, null, 2)}</pre>
           </Form>
         )}
       </Formik>
