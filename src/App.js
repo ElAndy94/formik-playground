@@ -8,12 +8,16 @@ const App = () => {
   return (
     <div className='form'>
       <Formik
-        initialValues={{ firstName: '' }}
-        onSubmit={data => {
+        initialValues={{ firstName: '', lastname: '' }}
+        onSubmit={(data, { setSubmitting }) => {
+          setSubmitting(true);
+          // make async call
           console.log('submit: ', data);
+
+          setSubmitting(false);
         }}
       >
-        {({ values, handleChange, handleBlur, handleSubmit }) => (
+        {({ values, isSubmitting, handleChange, handleBlur, handleSubmit }) => (
           <form onSubmit={handleSubmit}>
             <TextField
               name='firstName'
@@ -21,8 +25,16 @@ const App = () => {
               onChange={handleChange}
               onBlur={handleBlur}
             />
+            <TextField
+              name='lastName'
+              value={values.lastName}
+              onChange={handleChange}
+              onBlur={handleBlur}
+            />
             <div>
-              <Button type='submit'>Submit</Button>
+              <Button disabled={isSubmitting} type='submit'>
+                Submit
+              </Button>
             </div>
             <pre>{JSON.stringify(values, null, 2)}</pre>
           </form>
