@@ -6,9 +6,12 @@ import {
   Button,
   Checkbox,
   Radio,
-  FormControlLabel
+  FormControlLabel,
+  Select,
+  MenuItem
 } from '@material-ui/core';
-import { Formik, Field, Form, useField } from 'formik';
+import { Formik, Field, Form, useField, FieldArray } from 'formik';
+import * as yup from 'yup';
 
 const MyRadio = ({ label, ...props }) => {
   const [field] = useField(props);
@@ -28,6 +31,18 @@ const MyTextField = ({ placeholder, ...props }) => {
   );
 };
 
+const validationSchema = yup.object({
+  firstName: yup
+    .string()
+    .required()
+    .max(10),
+  pets: yup.array().of(
+    yup.object({
+      name: yup.string().required()
+    })
+  )
+});
+
 const App = () => {
   return (
     <div className='form'>
@@ -37,16 +52,18 @@ const App = () => {
           lastName: '',
           isTall: false,
           cookies: [],
-          yogurt: ''
+          yogurt: '',
+          pets: [{ type: 'cat', name: 'jarvis' }]
         }}
-        validate={values => {
-          const errors = {};
+        validationSchema={validationSchema}
+        // validate={values => {
+        //   const errors = {};
 
-          if (values.firstName.includes('bob')) {
-            errors.firstName = 'no bob';
-          }
-          return errors;
-        }}
+        //   if (values.firstName.includes('bob')) {
+        //     errors.firstName = 'no bob';
+        //   }
+        //   return errors;
+        // }}
         onSubmit={(data, { setSubmitting }) => {
           // make async call
           setSubmitting(true);
@@ -60,14 +77,14 @@ const App = () => {
               <MyTextField
                 placeholder='first name'
                 name='firstName'
-                type='input'
+                // type='input'
               />
             </div>
             <div>
               <MyTextField
                 placeholder='last name'
                 name='lastName'
-                type='input'
+                // type='input'
               />
             </div>
             <div>
@@ -99,11 +116,49 @@ const App = () => {
             {/* <Field name='yogurt' type='radio' value='peach' as={Radio} />
             <Field name='yogurt' type='radio' value='blueberry' as={Radio} />
             <Field name='yogurt' type='radio' value='apple' as={Radio} /> */}
-            <div>
-              <Button disabled={isSubmitting} type='submit'>
-                Submit
-              </Button>
-            </div>
+            <div>Selector</div>
+            <FieldArray name='pets'>
+              {arrayHelpers => (
+                <div>
+                  <Button
+                    onClick={() =>
+                      arrayHelpers.push({
+                        type: 'frog',
+                        name: ''
+                      })
+                    }
+                  >
+                    add pet
+                  </Button>
+                  {values.pets.map((pet, index) => {
+                    return (
+                      <div key={index}>
+                        <MyTextField
+                          placeholder='pet name'
+                          name={`pets.${index}.name`}
+                        />
+                        <Field
+                          name={`pets.${index}.type`}
+                          type='select'
+                          as={Select}
+                        >
+                          <MenuItem value='cat'>cat</MenuItem>
+                          <MenuItem value='dog'>dog</MenuItem>
+                          <MenuItem value='frog'>frog</MenuItem>
+                        </Field>
+                        <Button onClick={() => arrayHelpers.remove(index)}>
+                          x
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </FieldArray>
+            <Button disabled={isSubmitting} type='submit'>
+              Submit
+            </Button>
+
             <pre>{JSON.stringify(values, null, 2)}</pre>
             <pre>{JSON.stringify(errors, null, 2)}</pre>
           </Form>
